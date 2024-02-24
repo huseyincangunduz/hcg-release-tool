@@ -70,15 +70,16 @@ for ITEM in $ITEMS; do
             if [[ $CURRENT_VER_DEV != 'null' && $CURRENT_VER_DEV != 'undefined' ]]; then
                 echo $(cat $PKG_FILE | jq -r "(.devDependencies[$ITEM_SECONDARY] |= \"$VERSION\")") >$PKG_FILE
             fi
-            echo $(cat $PKG_FILE | jq "(.version |= \"$VERSION\")") >$PKG_FILE
-            CURRENT_DIRECTORY=$(pwd)
-            cd $DIRECTORY
-            git add .
-            git commit -m "Version upgraded to $VERSION"
-            git push
-            npm run build-publish
-            cd $CURRENT_DIRECTORY
+
         done
+        echo $(cat $PKG_FILE | jq "(.version |= \"$VERSION\")") >$PKG_FILE
+        CURRENT_DIRECTORY=$(pwd)
+        cd $DIRECTORY
+        git add .
+        git commit -m "Version upgraded to $VERSION"
+        git push
+        npm run build-publish
+        cd $CURRENT_DIRECTORY
     fi
 
     #
