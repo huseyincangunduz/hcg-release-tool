@@ -45,13 +45,25 @@ for ITEM in $ITEMS; do
     DIRECTORY=$(cat $TEMP_PACK_NAME_JSON | jq -r ".[] | select( .name==$ITEM) | .directory")
     PKG_FILE="${DIRECTORY}/package.json"
     for ITEM_SECONDARY in $ITEMS; do
-        CURRENT_VER=$(echo $(cat $PKG_FILE | jq -r "(.peerDependencies[$ITEM_SECONDARY])"))
-        if [[ $CURRENT_VER != 'null' && $CURRENT_VER != 'undefined' ]]; then
-            echo $CURRENT_VER
+        CURRENT_VER_PEER=$(echo $(cat $PKG_FILE | jq -r "(.peerDependencies[$ITEM_SECONDARY])"))
+        if [[ $CURRENT_VER_PEER != 'null' && $CURRENT_VER_PEER != 'undefined' ]]; then
             echo $(cat $PKG_FILE | jq -r "(.peerDependencies[$ITEM_SECONDARY] |= \"$VERSION\")") >$PKG_FILE
         fi
+        CURRENT_VER_NORMAL=$(echo $(cat $PKG_FILE | jq -r "(.dependencies[$ITEM_SECONDARY])"))
+        if [[ $CURRENT_VER_NORMAL != 'null' && $CURRENT_VER_NORMAL != 'undefined' ]]; then
+            echo $(cat $PKG_FILE | jq -r "(.dependencies[$ITEM_SECONDARY] |= \"$VERSION\")") >$PKG_FILE
+        fi
+        CURRENT_VER_DEV=$(echo $(cat $PKG_FILE | jq -r "(.devDependencies[$ITEM_SECONDARY])"))
+        if [[ $CURRENT_VER_DEV != 'null' && $CURRENT_VER_DEV != 'undefined' ]]; then
+            echo $(cat $PKG_FILE | jq -r "(.devDependencies[$ITEM_SECONDARY] |= \"$VERSION\")") >$PKG_FILE
+        fi
         echo $(cat $PKG_FILE | jq "(.version |= \"$VERSION\")") >$PKG_FILE
-
+        CURRENT_DIRECTORY=$DIRECTORY
+        cd $DIRECTORY
+        git commit -m "Version upgraded to $VERSION"
+        git push
+        npm run build-publish
+        cd $CURRENT_DIRECTORY
     done
 
     #
