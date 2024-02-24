@@ -38,6 +38,7 @@ for ITEM in $ITEMS; do
     fi
     echo $(cat $TEMP_PACK_NAME_JSON | jq -r "(.[] | select(.name == $ITEM) | .relativeDepencyLength) |= $PACKAGES_INCLUDED") >$TEMP_PACK_NAME_JSON
 done
+echo $(cat $TEMP_PACK_NAME_JSON | jq -r "sort_by(.relativeDepencyLength)") >$TEMP_PACK_NAME_JSON
 
 ITEMS=$(echo $(cat $TEMP_PACK_NAME_JSON | jq ".[].name"))
 
@@ -60,6 +61,7 @@ for ITEM in $ITEMS; do
         echo $(cat $PKG_FILE | jq "(.version |= \"$VERSION\")") >$PKG_FILE
         CURRENT_DIRECTORY=$DIRECTORY
         cd $DIRECTORY
+        git add .
         git commit -m "Version upgraded to $VERSION"
         git push
         npm run build-publish
